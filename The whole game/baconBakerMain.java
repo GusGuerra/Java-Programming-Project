@@ -36,8 +36,7 @@ public class baconBakerMain{
     boolean timerOn;
 
     //fontes utilizadas
-    Font font1; // wolf in the city
-    Font font2; // ?
+    Font font1, font2, font3;
 
     //botao principal e imagens
     ImageIcon bacon1, bacon2;
@@ -54,22 +53,24 @@ public class baconBakerMain{
     long game_time_start;
     long game_time_now;
     long elapsed;
+    long total_points;
     int seg = 1;
     int min = 60;
     int hor = 3600;
-
+    
     public static void main(String[] args){
         new baconBakerMain();
     }
 
     public baconBakerMain(){
         inicializa_jogo();//inicializa as variaveis de jogo
+        inicializa_fonte();//inicializa as fontes utilizadas
         inicializa_loja();//inicializa as variaveis da loja
-        inicializa_fonte();
-        inicializa_interface();
+        inicializa_interface();//inicializa interface e chama a timeElapsed()
     }
 
     public void inicializa_jogo(){
+        total_points = 0;
         game_time_start = System.currentTimeMillis();
         game_time_now = System.currentTimeMillis();
         elapsed = (long)0;
@@ -77,7 +78,9 @@ public class baconBakerMain{
         pps = 0.0;
         pontuacao_atual = 0;
     }
-
+    
+    //As variaveis relacionadas a loja que precisavam
+    //ser globais sao inicializadas aqui
     public void inicializa_loja(){
 
         item2Unlocked = item3Unlocked = item4Unlocked = false;
@@ -89,38 +92,41 @@ public class baconBakerMain{
 
         item1 = new JButton("Frying pan");
         item1.setActionCommand("item1");
-        item1.setFont(new Font("Comic Sans MS", Font.PLAIN, 20));
+        item1.setFont(font3);
         item1.setFocusPainted(false);
         item1.addMouseListener(acao_hover);
         item1.addActionListener(acao_click);
 
         item2 = new JButton("?");
         item2.setActionCommand("item2");
-        item2.setFont(new Font("Comic Sans MS", Font.PLAIN, 20));
+        item2.setFont(font3);
         item2.setFocusPainted(false);
         item2.addMouseListener(acao_hover);
         item2.addActionListener(acao_click);
 
         item3 = new JButton("?");
         item3.setActionCommand("item3");
-        item3.setFont(new Font("Comic Sans MS", Font.PLAIN, 20));
+        item3.setFont(font3);
         item3.setFocusPainted(false);
         item3.addMouseListener(acao_hover);
         item3.addActionListener(acao_click);
 
         item4 = new JButton("?");
         item4.setActionCommand("item4");
-        item4.setFont(new Font("Comic Sans MS", Font.PLAIN, 20));
+        item4.setFont(font3);
         item4.setFocusPainted(false);
         item4.addMouseListener(acao_hover);
         item4.addActionListener(acao_click);
     }
 
     public void inicializa_fonte(){
-        font1 = new Font("Comic Sans MS", Font.PLAIN, 32);
-        font2 = new Font("Comic Sans MS", Font.PLAIN, 15);
+        font1 = new Font("Sans Serif", Font.PLAIN, 30);
+        font2 = new Font("Sans Serif", Font.PLAIN, 13);
+        font3 = new Font("Sans Serif", Font.PLAIN, 18);
     }
-
+    
+    //Funcao responsavel por inicializar quase toda a interface do jogo
+    //Chama a funcao timeElapsed() para iniciar a variavel timer_relogio
     public void inicializa_interface(){
         
         //estrutura do JFrame
@@ -198,13 +204,13 @@ public class baconBakerMain{
 
         //Contador de tempo decorrido
         JPanel timePanel = new JPanel();
-        timePanel.setBounds(10, 375, 220, 50);
+        timePanel.setBounds(10, 375, 220, 100);
         timePanel.setBackground(Color.orange);
         timeElapsed();
         timer_relogio.start();
         exibe_tempo = new JLabel("Time elapsed: " + (elapsed/hor) + ":" + (elapsed/min) + ":" + (elapsed/seg));
         exibe_tempo.setForeground(Color.black);
-        exibe_tempo.setFont(new Font("Comic Sans MS", Font.PLAIN, 20));
+        exibe_tempo.setFont(new Font("Sans Serif", Font.PLAIN, 16));
         timePanel.add(exibe_tempo);
 
         frame_principal.add(timePanel);
@@ -214,7 +220,9 @@ public class baconBakerMain{
         frame_principal.add(baconPanel);
         frame_principal.setVisible(true);
     }
-
+    
+    //Controla a variavel timer_relogio, usada pro relogio que
+    //marca o tempo passado desde o inicio do jogo
     public void timeElapsed(){
 
         timer_relogio = new Timer(1000, new ActionListener(){
@@ -227,7 +235,9 @@ public class baconBakerMain{
             }
         });
     }
-
+    
+    //Controla a variavel timer_principal, que
+    //marca o ganho de pontos por segundo
     public void inicializaTimer(){
 
         timer_principal = new Timer(timerSpeed, new ActionListener(){
@@ -235,6 +245,7 @@ public class baconBakerMain{
             @Override
             public void actionPerformed(ActionEvent e){
                 pontuacao_atual++;
+                total_points++;
                 contador_principal.setText(pontuacao_atual + " point" + ((pontuacao_atual != 1) ? "s" : ""));
                 
                 if(item2Unlocked == false && pontuacao_atual >= 20){
@@ -252,7 +263,10 @@ public class baconBakerMain{
             }
         });
     }
-
+    
+    //Sempre que ocorre uma atualizacao
+    //na variavel "pps" (pontos por segundo)
+    //a funcao e chamada para atualizar o timer e o texto
     public void timerUpdate(){
 
         if(timerOn == true){
@@ -270,14 +284,27 @@ public class baconBakerMain{
         timerOn = true;
     }
 
+    //Todos os botoes do jogo sao tratados aqui
+    // - Botao principal
+    //   - Adiciona pontos
+    //   - Libera os itens da loja
+    //   - Atualiza o contador
+    // - Item[i]
+    //   - Atualiza o dinheiro atual
+    //   - Aumenta a variavel pps (pontos por segundo)
+    //   - Atualiza o timer de acordo com a pontuacao
+    //   - Aumenta o preco do item
+    //   - O *ultimo item* chama a funcao que completa o jogo
     public class clickHandler implements ActionListener{
 
+        @Override
         public void actionPerformed(ActionEvent event){
             String nome_acao = event.getActionCommand();
 
             if(nome_acao == "click"){ //click no bacon (pontuando)
 
                 pontuacao_atual++;
+                total_points++;
                 if(item2Unlocked == false && pontuacao_atual >= 20){
                     item2Unlocked = true;
                     item2.setText("Pig farm");
@@ -354,17 +381,20 @@ public class baconBakerMain{
             }
         }
     }
-
+    
+    //Mouse Listener pra lidar com os eventos de:
+    // - Clique no botao principal (mudar imagem)
+    // - Mouse passa sobre os itens da lojinha (mouse over tip)
     public class mouseOver implements MouseListener{
         
         @Override
         public void mouseClicked(MouseEvent e){
 
         }
-
+        
         @Override
         public void mousePressed(MouseEvent e){
-
+            //quando o botao principal e apertado, a imagem muda
             JButton botao_evento = (JButton)e.getSource();
 
             if(botao_evento == baconButton){
@@ -375,7 +405,7 @@ public class baconBakerMain{
 
         @Override
         public void mouseReleased(MouseEvent e){
-
+            //retornar pra imagem original quando o botao for solto
             JButton botao_evento = (JButton)e.getSource();
 
             if(botao_evento == baconButton){
@@ -386,7 +416,8 @@ public class baconBakerMain{
 
         @Override
         public void mouseEntered(MouseEvent e){
-
+            // "Mouse over tip" dos itens da loja
+            // exibe o texto na caixa preta quando o mouse passa sobre o item
             JButton botao_loja = (JButton)e.getSource();
 
             if(botao_loja == item1){
@@ -431,18 +462,19 @@ public class baconBakerMain{
             descricao_item.setText(null);
         }
     }
-
+    
+    //Funcao simples que completa o jogo assim que o ultimo item for comprado
     public void endGame(){
         timer_relogio.stop();
         timer_principal.stop();
         long horas = (elapsed/3600) % 60;
         long minutos = (elapsed/60) % 60;
         long segundos = elapsed % 60;
-
+        
         String[] options = {"I am ready to go."};
-        JOptionPane.showOptionDialog(null, "You played for " + horas + "hours, "
-        + minutos + " minutes and " + segundos + " seconds. Moments before the end,"
-        + " you were gracefully eating bacon", "You died",
+        JOptionPane.showOptionDialog(null, "You played for " + horas + " hours, "
+        + minutos + " minutes and " + segundos + " seconds. You collected " + total_points + " points."
+        + "Moments before the end, you were gracefully eating bacon\nThanks for playing the game,\nGustavo Guerra", "You died",
         JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
         System.exit(0);
     }
