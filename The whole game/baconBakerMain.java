@@ -130,7 +130,7 @@ public class baconBakerMain{
     public void inicializa_interface(){
         
         //estrutura do JFrame
-        JFrame frame_principal = new JFrame();
+        JFrame frame_principal = new JFrame("Bacon Baker Game v.1.2");
         frame_principal.setSize(750,440);
         frame_principal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame_principal.getContentPane().setBackground(Color.orange);
